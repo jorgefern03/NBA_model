@@ -1,4 +1,7 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
@@ -27,7 +30,7 @@ def run_exps(X_train: pd.DataFrame, y_train: pd.DataFrame, X_test: pd.DataFrame,
         #('RF', RandomForestClassifier()),
         #('KNN', KNeighborsClassifier()),
         #('SVC linear', SVC(kernel='linear', max_iter=10000000)),
-        #('SVC rbf', SVC(kernel='rbf', max_iter=10000000)),
+        #('SVC rbf', SVC(kernel='rbf', max_iter=10000000, probability=True)),
         #('GNB', GaussianNB()),
     ]
 
@@ -69,8 +72,8 @@ seasons = ['201314', '201415']
 
 # Temporada a predecir
 predict_season = '201516'
-model_folder = 'results/Team_Model/'
-folder = 'csv/entry_data/'
+model_folder = 'results/Team_Model/comp/'
+folder = 'csv/entry_data/bets_entry/'
 matrices_og_c = []
 
 for season in seasons:
@@ -203,8 +206,11 @@ for model in accuracy[0].keys():
     print(f'AUC-score: {roc_auc_score(y_test, y_pred)}')
     print(f'Average precision score: {average_precision_score(y_test, y_pred)}')
 
-    np.save(model_folder + 'test_' + predict_season + '.npy', y_test)
-    np.save(model_folder + 'pred_' + predict_season + '.npy', y_pred)
+    #np.save(model_folder + 'svm/test_' + predict_season + '.npy', y_test)
+    #np.save(model_folder + 'svm/pred_' + predict_season + '.npy', y_pred)
+    np.save(model_folder + 'bets/test_' + predict_season + '.npy', y_test)
+    np.save(model_folder + 'bets/pred_' + predict_season + '.npy', y_pred)
 
 y_proba = np.concatenate(proba_tot)
-np.save(model_folder + 'proba_' + predict_season + '.npy', y_proba)
+#np.save(model_folder + 'svm/proba_' + predict_season + '.npy', y_proba)
+np.save(model_folder + 'bets/proba_' + predict_season + '.npy', y_proba)

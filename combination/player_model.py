@@ -25,11 +25,11 @@ def run_exps(X_train: pd.DataFrame, y_train: pd.DataFrame, X_test: pd.DataFrame,
     # Definimos los modelos a utilizar
     models = [
         #('LogReg', LogisticRegression(max_iter=1000000)),
-        ('RF', RandomForestClassifier()),
+        #('RF', RandomForestClassifier()),
         #('KNN', KNeighborsClassifier()),
         #('SVM', LinearSVC(max_iter=10000000)), #10000000
         #('SVC linear', SVC(kernel='linear', max_iter=10000000)),
-        ('SVC rbf', SVC(kernel='rbf', max_iter=10000000)),
+        ('SVC rbf', SVC(kernel='rbf', max_iter=10000000, probability=True)),
         #('GNB', GaussianNB()),
         #('XGB', XGBClassifier()),
     ]
@@ -51,11 +51,19 @@ def run_exps(X_train: pd.DataFrame, y_train: pd.DataFrame, X_test: pd.DataFrame,
         clf = model.fit(X_train, y_train.values.ravel())
         
         # Predecimos los valores para la muestra de test
-        y_pred = clf.predict(X_test)
+        #y_pred = clf.predict(X_test)
+
+        # Calculamos la probabilidad de que la predicción de clase sea 1 (W)
+        y_proba = clf.predict_proba(X_test)
+        threshold = 0.5
+
+        # Convertimos las probabilidades en predicciones de clase
+        y_pred = (y_proba[:, 1] >= threshold).astype('int')
+        y_pred = np.array(y_pred)
 
         accuaracy[name] = (y_test, y_pred)
         
-    return accuaracy
+    return accuaracy, y_proba
 
 
 #seasons = ['201314', '201415', '201516']
@@ -65,7 +73,7 @@ seasons = ['201516', '201617', '201718']
 # Temporada a predecir
 predict_season = '201819'
 folder = 'csv/entry_data/player_entry/'
-model_folder = 'results/Player_Model/'
+model_folder = 'results/Player_Model/comp/'
 matrices_og_c = []
 
 for season in seasons:
@@ -99,8 +107,7 @@ m_players = matriz_train.iloc[:,:-36]
 
 #RandomForestClassifier()
 #LogisticRegression(max_iter=100000)
-#SVC(kernel='rbf', max_iter=100000)
-rfe_selector1 = RFE(estimator=SVR(kernel="linear"), step = 50, n_features_to_select=0.65)
+rfe_selector1 = RFE(estimator=SVC(kernel='linear', max_iter=100000), step = 50, n_features_to_select=0.65)
 rfe_selector1.fit(X_train[:,:-36], win_train)
 
 m_players = m_players[m_players.columns[rfe_selector1.get_support()]]
@@ -148,7 +155,7 @@ for i in range(0, 12):
     if i < 3:
         print(f'X train shape: {matriz_train.shape}')
         print(f'X test shape: {matriz_pred.shape}')
-        final = run_exps(matriz_train, win_train, matriz_pred, win_pred)
+        final, proba = run_exps(matriz_train, win_train, matriz_pred, win_pred)
     
     # Cuando i es menor a 8, se utilizan los datos en un margen de tiempo alrededor del segmento de temporada a predecir    
     elif i <8:
@@ -157,7 +164,7 @@ for i in range(0, 12):
        
         print(f'X train shape: {matriz_train.shape}')
         print(f'X test shape: {matriz_pred.shape}')
-        final = run_exps(matriz_train, win_train, matriz_pred, win_pred)
+        final, proba = run_exps(matriz_train, win_train, matriz_pred, win_pred)
     
     # Cuando i es menor a 11, se utiliza la parte final de las temporadas anteriores
     elif i < 11:
@@ -165,13 +172,14 @@ for i in range(0, 12):
         win_train = pd.concat([win_train.iloc[last:season1], win_train.iloc[season1+last:season2], win_train.iloc[season2+last:season3], win_train.tail(last)], ignore_index=True)
         print(f'X train shape: {matriz_train.shape}')
         print(f'X test shape: {matriz_pred.shape}')
-        final = run_exps(matriz_train, win_train, matriz_pred, win_pred)
+        final, proba = run_exps(matriz_train, win_train, matriz_pred, win_pred)
         
     # En el ultimo caso, se usan todos los datos de entrenamiento
     else:
-        final = run_exps(matriz_train, win_train, matriz_pred, win_pred)
+        final, proba = run_exps(matriz_train, win_train, matriz_pred, win_pred)
 
     accuracy += [final]
+    proba_tot += [proba]
 
 
 for model in accuracy[0].keys():
@@ -189,10 +197,10 @@ for model in accuracy[0].keys():
     print(f'F1: {f1_score(y_test, y_pred)}')
     print(f'AUC-score: {roc_auc_score(y_test, y_pred)}')
     print(f'Average precision score: {average_precision_score(y_test, y_pred)}')
-    #np.save(model_folder + 'test_' + predict_season + '.npy', y_test)
-    #np.save(model_folder + 'pred_' + predict_season + '.npy', y_pred)
 
-#y_proba = np.concatenate(proba_tot)
-#print(y_proba)
-#np.save(model_folder + 'proba_' + predict_season + '.npy', y_proba)
+    np.save(model_folder + 'svm/test_' + predict_season + '.npy', y_test)
+    np.save(model_folder + 'svm/pred_' + predict_season + '.npy', y_pred)
+
+y_proba = np.concatenate(proba_tot)
+np.save(model_folder + 'svm/proba_' + predict_season + '.npy', y_proba)
 
