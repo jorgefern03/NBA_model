@@ -8,6 +8,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import class_likelihood_ratios
 from sklearn.metrics import det_curve
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import f1_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import PrecisionRecallDisplay
@@ -15,30 +16,33 @@ import numpy as np
 import pandas as pd
 
 seasons = ['201617', '201718', '201819']
-models = ['Team_Model']
+seasons = ['201516', '201617', '201718']
+folder = 'Team_Model/comp/'
+models = ['Team_Model/comp/logreg', 'Team_Model/comp/bets']
+names = ['Original', 'Modelo + apuestas']
 
-for model in models:
+for model, name in zip(models, names):
+    test = []
+    pred = []
+    proba = []
     for season in seasons:
-        test = np.load('results/' + model +'/test_' + season + '.npy')
-        pred = np.load('results/' + model +'/pred_' + season + '.npy')
-        proba = np.load('results/' + model +'/proba_' + season + '.npy')
-
-        fpr, tpr, thresh = roc_curve(test, proba[:, 1])
-        auc = roc_auc_score(test, proba[:, 1])
-        plt.plot(fpr,tpr,label="season " + season +", auc="+str(round(auc, 4)))
-    
-
-        with open('results/' + model +'/reports/report_' + season + '.txt', 'w') as f:
-            print('Accuracy:', accuracy_score(test, pred), file=f)
-            print('Average Precision:', average_precision_score(test, proba[:,1]), file=f)
-            print('Confusion Matrix:\n', confusion_matrix(test, pred), file=f)
-            print('Classification Report:', classification_report(test, pred), file=f)
-
-    plt.legend(loc=0)
-    plt.savefig('results/' + model +'/reports/roc.png')    
-        #precision, recall, threshold = precision_recall_curve(test, proba[:, 1])
-        #prd = PrecisionRecallDisplay(precision, recall).plot()
-        #plt.plot()
-        #plt.savefig('results/' + model +'/reports/pr_' + season + '.png')
+        test += [np.load('results/' + model +'/test_' + season + '.npy')]
+        pred += [np.load('results/' + model +'/pred_' + season + '.npy')]
+        proba += [np.load('results/' + model +'/proba_' + season + '.npy')]
         
+    test = np.concatenate(test)
+    pred = np.concatenate(pred)
+    proba = np.concatenate(proba)
+
+    print('Accuracy:', accuracy_score(test, pred))
+    print(f'F1: {f1_score(test, pred)}')
+    print(f'Average precision score: {average_precision_score(test, pred)}')
+
+    fpr, tpr, thresh = roc_curve(test, proba[:, 1])
+    auc = roc_auc_score(test, proba[:, 1])
+    plt.plot(fpr,tpr,label= name+", AUC="+str(round(auc, 4)))
+
+plt.legend(loc=0)
+plt.savefig('results/' + folder +'ogvsbets_roc.png')    
+    
 

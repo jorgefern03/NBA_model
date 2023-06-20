@@ -73,7 +73,7 @@ seasons = ['201314', '201415']
 # Temporada a predecir
 predict_season = '201516'
 model_folder = 'results/Team_Model/comp/'
-folder = 'csv/entry_data/bets_entry/'
+folder = 'csv/entry_data/team_entry/'
 matrices_og_c = []
 
 for season in seasons:
@@ -208,9 +208,9 @@ for model in accuracy[0].keys():
 
     #np.save(model_folder + 'svm/test_' + predict_season + '.npy', y_test)
     #np.save(model_folder + 'svm/pred_' + predict_season + '.npy', y_pred)
-    np.save(model_folder + 'bets/test_' + predict_season + '.npy', y_test)
-    np.save(model_folder + 'bets/pred_' + predict_season + '.npy', y_pred)
+    np.save(model_folder + 'logreg/test_' + predict_season + '.npy', y_test)
+    np.save(model_folder + 'logreg/pred_' + predict_season + '.npy', y_pred)
 
 y_proba = np.concatenate(proba_tot)
 #np.save(model_folder + 'svm/proba_' + predict_season + '.npy', y_proba)
-np.save(model_folder + 'bets/proba_' + predict_season + '.npy', y_proba)
+np.save(model_folder + 'logreg/proba_' + predict_season + '.npy', y_proba)

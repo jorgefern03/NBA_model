@@ -25,7 +25,7 @@ def run_exps(X_train: pd.DataFrame, y_train: pd.DataFrame) -> pd.DataFrame:
     ]
 
     scoring = ['accuracy', 'precision_weighted',
-               'recall_weighted', 'f1_weighted', 'roc_auc']
+               'recall_weighted', 'f1', 'roc_auc']
 
     target_names = ['W', 'L']
     ss = MinMaxScaler()
