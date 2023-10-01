@@ -1,19 +1,27 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 seasons = ['201516', '201617', '201718']
 model = 'Team_Model'
 book_names = ['Pinnacle Sports', '5Dimes', 'Bookmaker', 'BetOnline', 'Bovada', 'Heritage', 'Intertops', 'YouWager', 'JustBet']
+book_names = ['5Dimes']
 
 for book in book_names:
+    wins = 0
+    losses = 0
     cont = 0
     start = 100
+    pct_win = []
+    pct_loss = []
+    evo = [100]
+    plt.clf()
     for season in seasons:
 
         # Cargamos los datos
-        test = np.load('combination/results/' + model +'/test_' + season + '.npy')
-        pred = np.load('combination/results/' + model +'/pred_' + season + '.npy')
-        proba = np.load('combination/results/' + model +'/proba_' + season + '.npy')
+        test = np.load('combination/results/' + model +'/comp/logreg/test_' + season + '.npy')
+        pred = np.load('combination/results/' + model +'/comp/logreg/pred_' + season + '.npy')
+        proba = np.load('combination/results/' + model +'/comp/logreg/proba_' + season + '.npy')
         bets = pd.read_csv('bets/nba_betting_money_line.csv', low_memory=False)
         games = pd.read_csv('combination/csv/entry_data/team_entry/entry_data_' + season + '.csv', low_memory=False)
 
@@ -57,16 +65,15 @@ for book in book_names:
             # Actualizamos el estado de la cartera
             if kc > 0:
                 if result == 1:
+                    wins += 1
+                    pct_win += [kc]
                     start += start*abs(kc)*h_decimal_odds
                 else:
+                    losses += 1
+                    pct_loss += [kc]
                     start -= start*abs(kc)
 
-            elif kc < 0:
-                if result == 0:
-                    start += start*abs(kc)*a_decimal_odds
-                else:
-                    start -= start*abs(kc)
-
+            evo += [start]
             # Si nos quedamos sin dinero, paramos
             if start < 0.1:
                 break
@@ -74,4 +81,19 @@ for book in book_names:
             cont+=1
             
     # Imprimimos los resultados 
-    print(start, book, cont)
+    mean_win = np.mean(pct_win)
+    mean_loss = np.mean(pct_loss)
+    print(start, book, cont, wins, mean_win, losses, mean_loss)
+
+    """
+    indices = range(1, len(evo) + 1)
+    plt.plot(indices, evo, '-')
+    plt.xlabel('Partidos')
+    plt.ylabel('Ganancias')
+
+    # Establecer título del gráfico
+    plt.title('Evolución de las ganancias con ' + book)
+
+    # Mostrar el gráfico
+    plt.show()
+    """

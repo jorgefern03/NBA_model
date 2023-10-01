@@ -168,7 +168,7 @@ def add_bookmaker_odds(df):
     """
     
     bets = pd.read_csv('csv/bets/nba_betting_money_line.csv', low_memory=False)
-    df['H_BOOKMAKER_WIN'] = -150
+    df['H_BOOKMAKER_WIN'] = 0
     book = '5Dimes'
     for game_id in df['GAME_ID']:
 

@@ -15,11 +15,11 @@ from sklearn.metrics import PrecisionRecallDisplay
 import numpy as np
 import pandas as pd
 
-seasons = ['201617', '201718', '201819']
+#seasons = ['201617', '201718', '201819']
 seasons = ['201516', '201617', '201718']
 folder = 'Team_Model/comp/'
 models = ['Team_Model/comp/logreg', 'Team_Model/comp/bets']
-names = ['Original', 'Modelo + apuestas']
+names = ['Original', 'Modelo + Apuestas']
 
 for model, name in zip(models, names):
     test = []
@@ -34,6 +34,7 @@ for model, name in zip(models, names):
     pred = np.concatenate(pred)
     proba = np.concatenate(proba)
 
+    print(classification_report(test, pred))
     print('Accuracy:', accuracy_score(test, pred))
     print(f'F1: {f1_score(test, pred)}')
     print(f'Average precision score: {average_precision_score(test, pred)}')
